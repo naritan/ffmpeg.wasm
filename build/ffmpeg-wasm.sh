@@ -52,6 +52,7 @@ CONF_FLAGS=(
   src/fftools/ffmpeg_opt.c 
   src/fftools/opt_common.c 
   src/fftools/ffprobe.c 
+  src/bind/ffmpeg/webcodec_io.c 
 )
 
 emcc "${CONF_FLAGS[@]}" $@

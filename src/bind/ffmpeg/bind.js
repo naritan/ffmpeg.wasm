@@ -12,6 +12,10 @@ Module["SIZE_I32"] = SIZE_I32;
 Module["DEFAULT_ARGS"] = DEFAULT_ARGS;
 Module["DEFAULT_ARGS_FFPROBE"] = DEFAULT_ARGS_FFPROBE;
 
+// WebCodecs frame buffer
+Module["frameBuffer"] = [];
+Module["filterInitialized"] = false;
+
 /**
  * Variables
  */

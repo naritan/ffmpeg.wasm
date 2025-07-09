@@ -2,7 +2,8 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-import type { FFmpegCoreModule, FFmpegCoreModuleFactory } from "@ffmpeg/types";
+import type { FFmpegCoreModuleFactory } from "@ffmpeg/types";
+import type { FFmpegCoreModuleExtended } from "./ffmpeg-core-extended";
 import type {
   FFMessageEvent,
   FFMessageLoadConfig,
@@ -43,7 +44,7 @@ interface ImportedFFmpegCoreModuleFactory {
   default: FFmpegCoreModuleFactory;
 }
 
-let ffmpeg: FFmpegCoreModule;
+let ffmpeg: FFmpegCoreModuleExtended;
 
 const load = async ({
   coreURL: _coreURL,
@@ -82,7 +83,7 @@ const load = async ({
     mainScriptUrlOrBlob: `${coreURL}#${btoa(
       JSON.stringify({ wasmURL, workerURL })
     )}`,
-  });
+  }) as FFmpegCoreModuleExtended;
   ffmpeg.setLogger((data) =>
     self.postMessage({ type: FFMessageType.LOG, data })
   );
@@ -171,14 +172,53 @@ let frameBuffer: Array<{ data: Uint8Array; timestamp: number }> = [];
 let filterContext: any = null;
 
 const writeFrame = ({ frameData, timestamp }: { frameData: Uint8Array; timestamp: number }): OK => {
-  frameBuffer.push({ data: frameData, timestamp });
-  return true;
+  if (!ffmpeg) return false;
+  
+  // Allocate memory for frame data
+  const dataPtr = ffmpeg._malloc(frameData.length);
+  ffmpeg.HEAPU8.set(frameData, dataPtr);
+  
+  // Call C function
+  const result = ffmpeg._write_frame(dataPtr, frameData.length, timestamp);
+  
+  // Free memory
+  ffmpeg._free(dataPtr);
+  
+  return result === 0;
 };
 
 const readFrame = (): { frameData: Uint8Array; timestamp: number } | null => {
-  if (frameBuffer.length === 0) return null;
-  const frame = frameBuffer.shift()!;
-  return { frameData: frame.data, timestamp: frame.timestamp };
+  if (!ffmpeg) return null;
+  
+  // Allocate buffer for reading frame
+  const bufferSize = 1920 * 1080 * 3 / 2; // Max size for 1080p YUV420
+  const bufferPtr = ffmpeg._malloc(bufferSize);
+  const timestampPtr = ffmpeg._malloc(8); // int64_t
+  
+  // Call C function
+  const size = ffmpeg._read_frame(bufferPtr, bufferSize, timestampPtr);
+  
+  if (size <= 0) {
+    ffmpeg._free(bufferPtr);
+    ffmpeg._free(timestampPtr);
+    return null;
+  }
+  
+  // Read data
+  const frameData = new Uint8Array(ffmpeg.HEAPU8.buffer, bufferPtr, size);
+  const timestamp = ffmpeg.getValue(timestampPtr, 'i64');
+  
+  // Copy data before freeing
+  const result = {
+    frameData: new Uint8Array(frameData),
+    timestamp: timestamp
+  };
+  
+  // Free memory
+  ffmpeg._free(bufferPtr);
+  ffmpeg._free(timestampPtr);
+  
+  return result;
 };
 
 const initFilter = ({ 
@@ -194,15 +234,25 @@ const initFilter = ({
   outputWidth: number;
   outputHeight: number;
 }): OK => {
-  // Initialize filter context (simplified)
-  filterContext = {
-    graph: filterGraph,
+  if (!ffmpeg) return false;
+  
+  // Convert string to C string
+  const filterPtr = ffmpeg._malloc(filterGraph.length + 1);
+  ffmpeg.stringToUTF8(filterGraph, filterPtr, filterGraph.length + 1);
+  
+  // Call C function
+  const result = ffmpeg._init_filter(
+    filterPtr,
     inputWidth,
     inputHeight,
     outputWidth,
     outputHeight
-  };
-  return true;
+  );
+  
+  // Free memory
+  ffmpeg._free(filterPtr);
+  
+  return result === 0;
 };
 
 const processFrame = ({ 
@@ -212,12 +262,51 @@ const processFrame = ({
   frameData: Uint8Array; 
   timestamp: number 
 }): { frameData: Uint8Array; timestamp: number } => {
-  // Process frame through filter (simplified)
-  // In real implementation, this would use FFmpeg's filter API
-  return { frameData, timestamp };
+  if (!ffmpeg) throw new Error("FFmpeg not loaded");
+  
+  // Allocate memory for input and output
+  const inputPtr = ffmpeg._malloc(frameData.length);
+  const outputSize = 1920 * 1080 * 3 / 2; // Max size for output
+  const outputPtr = ffmpeg._malloc(outputSize);
+  
+  // Copy input data
+  ffmpeg.HEAPU8.set(frameData, inputPtr);
+  
+  // Call C function
+  const resultSize = ffmpeg._process_frame(
+    inputPtr,
+    frameData.length,
+    timestamp,
+    outputPtr,
+    outputSize
+  );
+  
+  if (resultSize <= 0) {
+    ffmpeg._free(inputPtr);
+    ffmpeg._free(outputPtr);
+    throw new Error("Frame processing failed");
+  }
+  
+  // Read output data
+  const outputData = new Uint8Array(ffmpeg.HEAPU8.buffer, outputPtr, resultSize);
+  const result = {
+    frameData: new Uint8Array(outputData),
+    timestamp: timestamp
+  };
+  
+  // Free memory
+  ffmpeg._free(inputPtr);
+  ffmpeg._free(outputPtr);
+  
+  return result;
 };
 
 const closeFilter = (): OK => {
+  if (!ffmpeg) return false;
+  
+  // Call C function
+  ffmpeg._close_filter();
+  
   filterContext = null;
   frameBuffer = [];
   return true;
