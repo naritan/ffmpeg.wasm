@@ -70,6 +70,11 @@ export class FFmpeg {
           case FFMessageType.CREATE_DIR:
           case FFMessageType.LIST_DIR:
           case FFMessageType.DELETE_DIR:
+          case FFMessageType.WRITE_FRAME:
+          case FFMessageType.READ_FRAME:
+          case FFMessageType.INIT_FILTER:
+          case FFMessageType.PROCESS_FRAME:
+          case FFMessageType.CLOSE_FILTER:
             this.#resolves[id](data);
             break;
           case FFMessageType.LOG:
@@ -481,6 +486,100 @@ export class FFmpeg {
       {
         type: FFMessageType.DELETE_DIR,
         data: { path },
+      },
+      undefined,
+      signal
+    ) as Promise<OK>;
+
+  /**
+   * WebCodecs integration: Write a video frame to ffmpeg
+   * 
+   * @category WebCodecs
+   */
+  public writeFrame = (
+    frameData: Uint8Array,
+    timestamp: number,
+    { signal }: FFMessageOptions = {}
+  ): Promise<OK> =>
+    this.#send(
+      {
+        type: FFMessageType.WRITE_FRAME,
+        data: { frameData, timestamp },
+      },
+      [frameData.buffer],
+      signal
+    ) as Promise<OK>;
+
+  /**
+   * WebCodecs integration: Read a processed frame from ffmpeg
+   * 
+   * @category WebCodecs
+   */
+  public readFrame = (
+    { signal }: FFMessageOptions = {}
+  ): Promise<{ frameData: Uint8Array; timestamp: number }> =>
+    this.#send(
+      {
+        type: FFMessageType.READ_FRAME,
+        data: {},
+      },
+      undefined,
+      signal
+    ) as Promise<{ frameData: Uint8Array; timestamp: number }>;
+
+  /**
+   * WebCodecs integration: Initialize filter graph
+   * 
+   * @category WebCodecs
+   */
+  public initFilter = (
+    filterGraph: string,
+    inputWidth: number,
+    inputHeight: number,
+    outputWidth: number,
+    outputHeight: number,
+    { signal }: FFMessageOptions = {}
+  ): Promise<OK> =>
+    this.#send(
+      {
+        type: FFMessageType.INIT_FILTER,
+        data: { filterGraph, inputWidth, inputHeight, outputWidth, outputHeight },
+      },
+      undefined,
+      signal
+    ) as Promise<OK>;
+
+  /**
+   * WebCodecs integration: Process frame through filter
+   * 
+   * @category WebCodecs
+   */
+  public processFrame = (
+    frameData: Uint8Array,
+    timestamp: number,
+    { signal }: FFMessageOptions = {}
+  ): Promise<{ frameData: Uint8Array; timestamp: number }> =>
+    this.#send(
+      {
+        type: FFMessageType.PROCESS_FRAME,
+        data: { frameData, timestamp },
+      },
+      [frameData.buffer],
+      signal
+    ) as Promise<{ frameData: Uint8Array; timestamp: number }>;
+
+  /**
+   * WebCodecs integration: Close filter graph
+   * 
+   * @category WebCodecs
+   */
+  public closeFilter = (
+    { signal }: FFMessageOptions = {}
+  ): Promise<OK> =>
+    this.#send(
+      {
+        type: FFMessageType.CLOSE_FILTER,
+        data: {},
       },
       undefined,
       signal

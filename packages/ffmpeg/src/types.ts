@@ -107,6 +107,33 @@ export interface FFMessageUnmountData {
   mountPoint: FFFSPath;
 }
 
+// WebCodecs integration types
+export interface FFMessageWriteFrameData {
+  frameData: Uint8Array;
+  timestamp: number;
+}
+
+export interface FFMessageReadFrameData {
+  // No data needed for read frame
+}
+
+export interface FFMessageInitFilterData {
+  filterGraph: string;
+  inputWidth: number;
+  inputHeight: number;
+  outputWidth: number;
+  outputHeight: number;
+}
+
+export interface FFMessageProcessFrameData {
+  frameData: Uint8Array;
+  timestamp: number;
+}
+
+export interface FFMessageCloseFilterData {
+  // No data needed for close filter
+}
+
 export type FFMessageData =
   | FFMessageLoadConfig
   | FFMessageExecData
@@ -118,7 +145,12 @@ export type FFMessageData =
   | FFMessageListDirData
   | FFMessageDeleteDirData
   | FFMessageMountData
-  | FFMessageUnmountData;
+  | FFMessageUnmountData
+  | FFMessageWriteFrameData
+  | FFMessageReadFrameData
+  | FFMessageInitFilterData
+  | FFMessageProcessFrameData
+  | FFMessageCloseFilterData;
 
 export interface Message {
   type: string;
@@ -164,6 +196,8 @@ export type CallbackData =
   | OK // eslint-disable-line
   | Error
   | FSNode[]
+  | { frameData: Uint8Array; timestamp: number }
+  | null
   | undefined;
 
 export interface Callbacks {

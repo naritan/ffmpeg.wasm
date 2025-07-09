@@ -16,6 +16,9 @@ import type {
   FFMessageDeleteDirData,
   FFMessageMountData,
   FFMessageUnmountData,
+  FFMessageWriteFrameData,
+  FFMessageInitFilterData,
+  FFMessageProcessFrameData,
   CallbackData,
   IsFirst,
   OK,
@@ -163,6 +166,63 @@ const unmount = ({ mountPoint }: FFMessageUnmountData): OK => {
   return true;
 };
 
+// WebCodecs integration functions
+let frameBuffer: Array<{ data: Uint8Array; timestamp: number }> = [];
+let filterContext: any = null;
+
+const writeFrame = ({ frameData, timestamp }: { frameData: Uint8Array; timestamp: number }): OK => {
+  frameBuffer.push({ data: frameData, timestamp });
+  return true;
+};
+
+const readFrame = (): { frameData: Uint8Array; timestamp: number } | null => {
+  if (frameBuffer.length === 0) return null;
+  const frame = frameBuffer.shift()!;
+  return { frameData: frame.data, timestamp: frame.timestamp };
+};
+
+const initFilter = ({ 
+  filterGraph, 
+  inputWidth, 
+  inputHeight, 
+  outputWidth, 
+  outputHeight 
+}: {
+  filterGraph: string;
+  inputWidth: number;
+  inputHeight: number;
+  outputWidth: number;
+  outputHeight: number;
+}): OK => {
+  // Initialize filter context (simplified)
+  filterContext = {
+    graph: filterGraph,
+    inputWidth,
+    inputHeight,
+    outputWidth,
+    outputHeight
+  };
+  return true;
+};
+
+const processFrame = ({ 
+  frameData, 
+  timestamp 
+}: { 
+  frameData: Uint8Array; 
+  timestamp: number 
+}): { frameData: Uint8Array; timestamp: number } => {
+  // Process frame through filter (simplified)
+  // In real implementation, this would use FFmpeg's filter API
+  return { frameData, timestamp };
+};
+
+const closeFilter = (): OK => {
+  filterContext = null;
+  frameBuffer = [];
+  return true;
+};
+
 self.onmessage = async ({
   data: { id, type, data: _data },
 }: FFMessageEvent): Promise<void> => {
@@ -207,6 +267,21 @@ self.onmessage = async ({
         break;
       case FFMessageType.UNMOUNT:
         data = unmount(_data as FFMessageUnmountData);
+        break;
+      case FFMessageType.WRITE_FRAME:
+        data = writeFrame(_data as any);
+        break;
+      case FFMessageType.READ_FRAME:
+        data = readFrame();
+        break;
+      case FFMessageType.INIT_FILTER:
+        data = initFilter(_data as any);
+        break;
+      case FFMessageType.PROCESS_FRAME:
+        data = processFrame(_data as any);
+        break;
+      case FFMessageType.CLOSE_FILTER:
+        data = closeFilter();
         break;
       default:
         throw ERROR_UNKNOWN_MESSAGE_TYPE;

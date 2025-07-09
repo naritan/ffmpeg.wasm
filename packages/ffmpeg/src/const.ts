@@ -22,4 +22,11 @@ export enum FFMessageType {
   LOG = "LOG",
   MOUNT = "MOUNT",
   UNMOUNT = "UNMOUNT",
+  
+  // WebCodecs integration
+  WRITE_FRAME = "WRITE_FRAME",
+  READ_FRAME = "READ_FRAME",
+  INIT_FILTER = "INIT_FILTER",
+  PROCESS_FRAME = "PROCESS_FRAME",
+  CLOSE_FILTER = "CLOSE_FILTER",
 }
