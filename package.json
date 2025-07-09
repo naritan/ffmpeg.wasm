@@ -1,6 +1,16 @@
 {
-  "name": "root",
-  "private": true,
+  "name": "@ffmpeg/ffmpeg",
+  "version": "0.12.15",
+  "main": "./packages/ffmpeg/dist/umd/ffmpeg.js",
+  "module": "./packages/ffmpeg/dist/esm/index.js",
+  "types": "./packages/ffmpeg/dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./packages/ffmpeg/dist/esm/index.d.ts",
+      "import": "./packages/ffmpeg/dist/esm/index.js",
+      "require": "./packages/ffmpeg/dist/umd/ffmpeg.js"
+    }
+  },
   "scripts": {
     "lint": "npm-run-all lint:*",
     "lint:packages": "npm run lint --workspace=packages --if-present",
