@@ -2,16 +2,15 @@
   "name": "@ffmpeg/ffmpeg",
   "version": "0.12.15",
   "description": "FFmpeg WebAssembly version for browser",
-  "main": "./dist/umd/ffmpeg.js",
+  "main": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
-      "node": "./dist/esm/empty.mjs",
-      "default": {
-        "import": "./dist/esm/index.js",
-        "require": "./dist/umd/ffmpeg.js"
-      }
+      "import": "./dist/esm/index.js",
+      "require": "./dist/umd/ffmpeg.js",
+      "default": "./dist/esm/index.js"
     },
     "./worker": {
       "types": "./dist/esm/worker.d.ts",

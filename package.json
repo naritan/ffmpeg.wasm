@@ -2,13 +2,19 @@
   "name": "@ffmpeg/ffmpeg",
   "version": "0.12.15",
   "private": false,
-  "main": "./index.js",
-  "module": "./index.js",
+  "main": "./packages/ffmpeg/dist/esm/index.js",
+  "module": "./packages/ffmpeg/dist/esm/index.js",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./index.js",
-      "default": "./index.js"
+      "types": "./packages/ffmpeg/dist/esm/index.d.ts",
+      "import": "./packages/ffmpeg/dist/esm/index.js",
+      "require": "./packages/ffmpeg/dist/umd/ffmpeg.js",
+      "default": "./packages/ffmpeg/dist/esm/index.js"
+    },
+    "./worker": {
+      "types": "./packages/ffmpeg/dist/esm/worker.d.ts",
+      "default": "./packages/ffmpeg/dist/esm/worker.js"
     }
   },
   "scripts": {
