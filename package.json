@@ -9,10 +9,10 @@
     ".": {
       "types": "./packages/ffmpeg/dist/esm/index.d.ts",
       "node": "./packages/ffmpeg/dist/esm/empty.mjs",
-      "default": {
-        "import": "./packages/ffmpeg/dist/esm/index.js",
-        "require": "./packages/ffmpeg/dist/umd/ffmpeg.js"
-      }
+      "browser": "./packages/ffmpeg/dist/esm/index.js",
+      "import": "./packages/ffmpeg/dist/esm/index.js",
+      "require": "./packages/ffmpeg/dist/umd/ffmpeg.js",
+      "default": "./packages/ffmpeg/dist/esm/index.js"
     },
     "./worker": {
       "types": "./packages/ffmpeg/dist/esm/worker.d.ts",
