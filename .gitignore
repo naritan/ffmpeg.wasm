@@ -1,5 +1,5 @@
 node_modules
-dist
+# dist (commented out to allow built files for GitHub installation)
 /.nyc_output
 .DS_Store
 
