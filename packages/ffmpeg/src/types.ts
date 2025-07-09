@@ -114,7 +114,8 @@ export interface FFMessageWriteFrameData {
 }
 
 export interface FFMessageReadFrameData {
-  // No data needed for read frame
+  width?: number;
+  height?: number;
 }
 
 export interface FFMessageInitFilterData {
@@ -128,6 +129,8 @@ export interface FFMessageInitFilterData {
 export interface FFMessageProcessFrameData {
   frameData: Uint8Array;
   timestamp: number;
+  outputWidth?: number;
+  outputHeight?: number;
 }
 
 export interface FFMessageCloseFilterData {

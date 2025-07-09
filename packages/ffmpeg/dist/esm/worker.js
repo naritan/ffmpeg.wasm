@@ -114,11 +114,11 @@ const writeFrame = ({ frameData, timestamp }) => {
     ffmpeg._free(dataPtr);
     return result === 0;
 };
-const readFrame = () => {
+const readFrame = ({ width = 1920, height = 1080 } = {}) => {
     if (!ffmpeg)
         return null;
     // Allocate buffer for reading frame
-    const bufferSize = 1920 * 1080 * 3 / 2; // Max size for 1080p YUV420
+    const bufferSize = width * height * 3 / 2; // Buffer size for YUV420
     const bufferPtr = ffmpeg._malloc(bufferSize);
     const timestampPtr = ffmpeg._malloc(8); // int64_t
     // Call C function
@@ -153,12 +153,12 @@ const initFilter = ({ filterGraph, inputWidth, inputHeight, outputWidth, outputH
     ffmpeg._free(filterPtr);
     return result === 0;
 };
-const processFrame = ({ frameData, timestamp }) => {
+const processFrame = ({ frameData, timestamp, outputWidth = 1920, outputHeight = 1080 }) => {
     if (!ffmpeg)
         throw new Error("FFmpeg not loaded");
     // Allocate memory for input and output
     const inputPtr = ffmpeg._malloc(frameData.length);
-    const outputSize = 1920 * 1080 * 3 / 2; // Max size for output
+    const outputSize = outputWidth * outputHeight * 3 / 2; // Buffer size for output YUV420
     const outputPtr = ffmpeg._malloc(outputSize);
     // Copy input data
     ffmpeg.HEAPU8.set(frameData, inputPtr);
@@ -236,7 +236,7 @@ self.onmessage = async ({ data: { id, type, data: _data }, }) => {
                 data = writeFrame(_data);
                 break;
             case FFMessageType.READ_FRAME:
-                data = readFrame();
+                data = readFrame(_data);
                 break;
             case FFMessageType.INIT_FILTER:
                 data = initFilter(_data);

@@ -93,6 +93,8 @@ export interface FFMessageWriteFrameData {
     timestamp: number;
 }
 export interface FFMessageReadFrameData {
+    width?: number;
+    height?: number;
 }
 export interface FFMessageInitFilterData {
     filterGraph: string;
@@ -104,6 +106,8 @@ export interface FFMessageInitFilterData {
 export interface FFMessageProcessFrameData {
     frameData: Uint8Array;
     timestamp: number;
+    outputWidth?: number;
+    outputHeight?: number;
 }
 export interface FFMessageCloseFilterData {
 }

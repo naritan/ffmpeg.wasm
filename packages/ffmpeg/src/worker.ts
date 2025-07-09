@@ -18,6 +18,7 @@ import type {
   FFMessageMountData,
   FFMessageUnmountData,
   FFMessageWriteFrameData,
+  FFMessageReadFrameData,
   FFMessageInitFilterData,
   FFMessageProcessFrameData,
   CallbackData,
@@ -187,11 +188,11 @@ const writeFrame = ({ frameData, timestamp }: { frameData: Uint8Array; timestamp
   return result === 0;
 };
 
-const readFrame = (): { frameData: Uint8Array; timestamp: number } | null => {
+const readFrame = ({ width = 1920, height = 1080 }: { width?: number; height?: number } = {}): { frameData: Uint8Array; timestamp: number } | null => {
   if (!ffmpeg) return null;
   
   // Allocate buffer for reading frame
-  const bufferSize = 1920 * 1080 * 3 / 2; // Max size for 1080p YUV420
+  const bufferSize = width * height * 3 / 2; // Buffer size for YUV420
   const bufferPtr = ffmpeg._malloc(bufferSize);
   const timestampPtr = ffmpeg._malloc(8); // int64_t
   
@@ -257,16 +258,20 @@ const initFilter = ({
 
 const processFrame = ({ 
   frameData, 
-  timestamp 
+  timestamp,
+  outputWidth = 1920,
+  outputHeight = 1080
 }: { 
   frameData: Uint8Array; 
-  timestamp: number 
+  timestamp: number;
+  outputWidth?: number;
+  outputHeight?: number;
 }): { frameData: Uint8Array; timestamp: number } => {
   if (!ffmpeg) throw new Error("FFmpeg not loaded");
   
   // Allocate memory for input and output
   const inputPtr = ffmpeg._malloc(frameData.length);
-  const outputSize = 1920 * 1080 * 3 / 2; // Max size for output
+  const outputSize = outputWidth * outputHeight * 3 / 2; // Buffer size for output YUV420
   const outputPtr = ffmpeg._malloc(outputSize);
   
   // Copy input data
@@ -361,13 +366,13 @@ self.onmessage = async ({
         data = writeFrame(_data as any);
         break;
       case FFMessageType.READ_FRAME:
-        data = readFrame();
+        data = readFrame(_data as FFMessageReadFrameData);
         break;
       case FFMessageType.INIT_FILTER:
         data = initFilter(_data as any);
         break;
       case FFMessageType.PROCESS_FRAME:
-        data = processFrame(_data as any);
+        data = processFrame(_data as FFMessageProcessFrameData);
         break;
       case FFMessageType.CLOSE_FILTER:
         data = closeFilter();
