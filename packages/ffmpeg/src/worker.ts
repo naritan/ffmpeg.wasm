@@ -3,7 +3,7 @@
 /// <reference lib="webworker" />
 
 import type { FFmpegCoreModuleFactory } from "@ffmpeg/types";
-import type { FFmpegCoreModuleExtended } from "./ffmpeg-core-extended";
+import type { FFmpegCoreModuleExtended } from "./ffmpeg-core-extended.js";
 import type {
   FFMessageEvent,
   FFMessageLoadConfig,
@@ -27,7 +27,7 @@ import type {
   ExitCode,
   FSNode,
   FileData,
-} from "./types";
+} from "./types.js";
 import { CORE_URL, FFMessageType } from "./const.js";
 import {
   ERROR_UNKNOWN_MESSAGE_TYPE,
@@ -85,10 +85,10 @@ const load = async ({
       JSON.stringify({ wasmURL, workerURL })
     )}`,
   }) as FFmpegCoreModuleExtended;
-  ffmpeg.setLogger((data) =>
+  ffmpeg.setLogger((data: any) =>
     self.postMessage({ type: FFMessageType.LOG, data })
   );
-  ffmpeg.setProgress((data) =>
+  ffmpeg.setProgress((data: any) =>
     self.postMessage({
       type: FFMessageType.PROGRESS,
       data,
