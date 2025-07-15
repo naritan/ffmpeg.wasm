@@ -301,7 +301,7 @@ static int webcodec_read_packet(void *opaque, uint8_t *buf, int buf_size) {
     return js_read_frame(buf, buf_size);
 }
 
-static int webcodec_write_packet(void *opaque, uint8_t *buf, int buf_size) {
+static int webcodec_write_packet(void *opaque, const uint8_t *buf, int buf_size) {
     return js_write_frame(buf, buf_size, 0);
 }
 
