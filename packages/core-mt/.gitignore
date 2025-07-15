@@ -1,2 +1,2 @@
-dist/
+# dist/ (commented out to allow built files for GitHub installation)
 types/
