@@ -21,21 +21,21 @@ RUN apt-get update && \
 
 # Build x264
 FROM emsdk-base AS x264-builder
-ENV X264_BRANCH=stable
+ENV X264_BRANCH=stable-wasm
 ADD https://github.com/ffmpegwasm/x264.git#$X264_BRANCH /src
 COPY build/x264.sh /src/build.sh
 RUN bash -x /src/build.sh
 
 # Build x265
 FROM emsdk-base AS x265-builder
-ENV X265_BRANCH=3.5
+ENV X265_BRANCH=3.4
 ADD https://github.com/ffmpegwasm/x265.git#$X265_BRANCH /src
 COPY build/x265.sh /src/build.sh
 RUN bash -x /src/build.sh
 
 # Build libvpx
 FROM emsdk-base AS libvpx-builder
-ENV LIBVPX_BRANCH=v1.14.0
+ENV LIBVPX_BRANCH=v1.13.1
 ADD https://github.com/ffmpegwasm/libvpx.git#$LIBVPX_BRANCH /src
 COPY build/libvpx.sh /src/build.sh
 RUN bash -x /src/build.sh
@@ -64,7 +64,7 @@ RUN bash -x /src/build.sh
 
 # Build opus
 FROM emsdk-base AS opus-builder
-ENV OPUS_BRANCH=v1.4
+ENV OPUS_BRANCH=v1.3.1
 ADD https://github.com/ffmpegwasm/opus.git#$OPUS_BRANCH /src
 COPY build/opus.sh /src/build.sh
 RUN bash -x /src/build.sh
@@ -87,7 +87,7 @@ RUN bash -x /src/build.sh
 # Build libwebp
 FROM emsdk-base AS libwebp-builder
 COPY --from=zlib-builder $INSTALL_DIR $INSTALL_DIR
-ENV LIBWEBP_BRANCH=v1.4.0
+ENV LIBWEBP_BRANCH=v1.3.2
 ADD https://github.com/ffmpegwasm/libwebp.git#$LIBWEBP_BRANCH /src
 COPY build/libwebp.sh /src/build.sh
 RUN bash -x /src/build.sh
