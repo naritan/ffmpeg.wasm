@@ -1619,8 +1619,9 @@ static void print_report(int is_last_report, int64_t timer_start, int64_t cur_ti
             vid = 1;
         }
         /* compute min output value */
-        if (av_stream_get_end_pts(ost->st) != AV_NOPTS_VALUE) {
-            pts = FFMAX(pts, av_rescale_q(av_stream_get_end_pts(ost->st),
+        if (ost->st->duration != AV_NOPTS_VALUE && ost->st->start_time != AV_NOPTS_VALUE) {
+            int64_t end_pts = ost->st->start_time + ost->st->duration;
+            pts = FFMAX(pts, av_rescale_q(end_pts,
                                           ost->st->time_base, AV_TIME_BASE_Q));
             if (copy_ts) {
                 if (copy_ts_first_pts == AV_NOPTS_VALUE && pts > 1)
@@ -2256,7 +2257,7 @@ static int decode_video(InputStream *ist, AVPacket *pkt, int *got_output, int64_
     ist->hwaccel_retrieved_pix_fmt = decoded_frame->format;
 
     best_effort_timestamp= decoded_frame->best_effort_timestamp;
-    *duration_pts = decoded_frame->pkt_duration;
+    *duration_pts = decoded_frame->duration;
 
     if (ist->framerate.num)
         best_effort_timestamp = ist->cfr_next_pts++;
