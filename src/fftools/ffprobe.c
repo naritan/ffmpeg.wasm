@@ -2622,8 +2622,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     print_time("pkt_dts_time",          frame->pkt_dts, &stream->time_base);
     print_ts  ("best_effort_timestamp", frame->best_effort_timestamp);
     print_time("best_effort_timestamp_time", frame->best_effort_timestamp, &stream->time_base);
-    print_duration_ts  ("pkt_duration",      frame->pkt_duration);
-    print_duration_time("pkt_duration_time", frame->pkt_duration, &stream->time_base);
+    print_duration_ts  ("pkt_duration",      frame->duration);
+    print_duration_time("pkt_duration_time", frame->duration, &stream->time_base);
     if (frame->pkt_pos != -1) print_fmt    ("pkt_pos", "%"PRId64, frame->pkt_pos);
     else                      print_str_opt("pkt_pos", "N/A");
     if (frame->pkt_size != -1) print_val    ("pkt_size", frame->pkt_size, unit_byte_str);
@@ -2645,8 +2645,9 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
             print_str_opt("sample_aspect_ratio", "N/A");
         }
         print_fmt("pict_type",              "%c", av_get_picture_type_char(frame->pict_type));
-        print_int("coded_picture_number",   frame->coded_picture_number);
-        print_int("display_picture_number", frame->display_picture_number);
+        // coded_picture_number and display_picture_number removed in FFmpeg 7.0
+        // print_int("coded_picture_number",   frame->coded_picture_number);
+        // print_int("display_picture_number", frame->display_picture_number);
         print_int("interlaced_frame",       frame->interlaced_frame);
         print_int("top_field_first",        frame->top_field_first);
         print_int("repeat_pict",            frame->repeat_pict);
